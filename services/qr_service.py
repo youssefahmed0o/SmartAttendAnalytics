@@ -5,9 +5,16 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "database.db"
 
+import random
+import string
+# ... باقي الاستيرادات الموجودة لديك
+
 def generate_qr_token(lecture_id, valid_seconds=30):
-    """توليد رمز QR مؤقت مدته 30 ثانية للمحاضرة."""
-    token = secrets.token_urlsafe(16)
+    """توليد مدة 30 ثانية للمحاضرة QR توليد رمز"""
+    # توليد 6 حروف وأرقام عشوائية بدلاً من التوكن الطويل
+    characters = string.ascii_letters + string.digits
+    token = ''.join(random.choices(characters, k=6))
+    
     expires_at = (datetime.now() + timedelta(seconds=valid_seconds)).isoformat()
 
     with sqlite3.connect(DB_PATH) as conn:
