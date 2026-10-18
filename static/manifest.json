@@ -1,20 +1,23 @@
 {
-  "name": "Smart Attend Analytics",
   "short_name": "SmartAttend",
-  "start_url": "/login",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d6efd",
+  "name": "SmartAttend Analytics System",
   "icons": [
     {
-      "src": "/static/icon-192.png",
+      "src": "/static/logo.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "type": "image/png"
+      "purpose": "any maskable"
     },
     {
-      "src": "/static/icon-512.png",
+      "src": "/static/logo.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png"
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "/login",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
 }
