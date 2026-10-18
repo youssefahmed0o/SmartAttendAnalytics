@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+
+{% block title %}عنوان الصفحة{% endblock %}
+{% block navbar %}{% endblock %}
+{% block content %}
+        <!-- باقي العناصر -->
+    </div>
+</div>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الطالب - جامعة حلوان التكنولوجية الدولية HITU</title>
+    <!-- مكتبة Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- خط Cairo الأنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- ربط ملف الستايل المركزي للهوية البصرية -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- شريط التنقل العلوي الموحد (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-hitu sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="HITU Logo" height="40" class="d-inline-block align-text-top bg-white rounded-circle p-1">
+                <span>HITU <small class="fw-normal fs-6 text-light">| لوحة الطالب</small></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#hituNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="hituNavbar">
+                <ul class="navbar-nav align-items-center gap-2 mt-2 mt-lg-0">
+                    <li class="nav-item">
+                        <span class="text-light small px-2">مرحباً، <strong class="text-warning">{{ student['full_name'] if student else session['username'] }}</strong></span>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{{ url_for('logout') }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-outline-light btn-sm px-3">تسجيل الخروج</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        
+        <!-- بطاقة الترحيب والملف الشخصي -->
+        <div class="card p-4 shadow-sm mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center mb-3 mb-md-0">
+                    <div class="university-logo-container" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <img src="{{ url_for('static', filename='logo.png') }}" alt="شعار الجامعة">
+                    </div>
+                </div>
+                <div class="col-md-10 text-center text-md-start">
+                    <h3 class="fw-bold text-dark mb-1">مرحبًا، {{ student['full_name'] if student else session['username'] }}</h3>
+                    <p class="text-muted mb-2"><strong>كود الطالب:</strong> {{ student['student_code'] if student else 'غير محدد' }}</p>
+                    <a href="{{ url_for('student_analytics_page') }}" class="btn btn-hitu-gold btn-sm px-3 py-2 text-white">📊 عرض تقاريري ونسب الحضور</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- رسائل التنبيه والخطأ -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- المحاضرات المفتوحة لتسجيل الحضور عبر الـ QR -->
+        <div class="card shadow-sm mb-4 border-end border-4 border-success">
+            <div class="card-header-hitu bg-success text-white">
+                <h5 class="mb-0">🟢 المحاضرات المفتوحة لتسجيل الحضور الآن</h5>
+            </div>
+            <div class="card-body">
+                {% if open_lectures %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>المادة</th>
+                                    <th>التاريخ</th>
+                                    <th>الوقت</th>
+                                    <th>تسجيل الحضور (كاميرا / رمز)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lec in open_lectures %}
+                                    <tr>
+                                        <td>{{ lec['subject_name'] }}</td>
+                                        <td>{{ lec['lecture_date'] }}</td>
+                                        <td>{{ lec['start_time'] }} - {{ lec['end_time'] }}</td>
+                                        <td>
+                                            <!-- 1. زر فتح الكاميرا لمسح الـ QR -->
+                                            <button type="button" onclick="openCameraScanner({{ lec['id'] }})" class="btn btn-success btn-sm w-100 fw-bold mb-2">📷 مسح الـ QR بالكاميرا</button>
+
+                                            <!-- 2. نموذج كتابة الرمز يدويًا -->
+                                            <form action="{{ url_for('handle_mark_attendance_qr') }}" method="POST" class="d-flex gap-2 justify-content-center">
+                                                <input type="hidden" name="lecture_id" value="{{ lec['id'] }}">
+                                                <input type="text" id="qr_input_{{ lec['id'] }}" name="qr_token" placeholder="أدخل الرمز النصي" required class="form-control form-control-sm">
+                                                <button type="submit" class="btn btn-hitu-primary btn-sm px-3 fw-bold">تأكيد 📲</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0 py-3">لا توجد محاضرات مفتوحة لتسجيل الحضور في الوقت الحالي.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- نافذة كاميرا الفحص (Camera Modal) -->
+        <div id="scanner-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+            <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; width: 90%; max-width: 380px;">
+                <h4 class="mb-3 text-dark fw-bold">📷 وجه الكاميرا نحو شاشة الدكتور</h4>
+                <div id="reader" style="width: 100%;"></div>
+                <button type="button" onclick="closeCameraScanner()" class="btn btn-danger btn-sm mt-3 px-4">إغلاق الكاميرا</button>
+            </div>
+        </div>
+
+        <!-- مكتبة مسح الـ QR بالكاميرا -->
+        <script src="https://unpkg.com/html5-qrcode"></script>
+        <script>
+        let html5QrcodeScanner = null;
+
+        function openCameraScanner(lectureId) {
+            document.getElementById('scanner-modal').style.display = 'flex';
+            
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 200, height: 200 } },
+                (decodedText, decodedResult) => {
+                    document.getElementById('qr_input_' + lectureId).value = decodedText;
+                    html5QrcodeScanner.stop().then(() => {
+                        document.getElementById('scanner-modal').style.display = 'none';
+                        document.getElementById('qr_input_' + lectureId).form.submit();
+                    });
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                alert("تعذر فتح الكاميرا، يرجى السماح بالإذن أو استخدام كتابة الرمز يدويًا.");
+                closeCameraScanner();
+            });
+        }
+
+        function closeCameraScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    document.getElementById('scanner-modal').style.display = 'none';
+                }).catch(() => {
+                    document.getElementById('scanner-modal').style.display = 'none';
+                });
+            } else {
+                document.getElementById('scanner-modal').style.display = 'none';
+            }
+        }
+        </script>
+
+        <!-- سجل الحضور الشخصي -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">سجل حضورك المسجل</h5>
+            </div>
+            <div class="card-body">
+                {% if my_attendance %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>المادة</th>
+                                    <th>التاريخ</th>
+                                    <th>حالة الحضور</th>
+                                    <th>توقيت التسجيل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for att in my_attendance %}
+                                    <tr>
+                                        <td>{{ att['subject_name'] }}</td>
+                                        <td>{{ att['lecture_date'] }}</td>
+                                        <td><strong class="text-success">{{ att['attendance_status'] }}</strong></td>
+                                        <td>{{ att['marked_at'] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0 py-3">لم تقم بتسجيل الحضور في أي محاضرة بعد.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- جدول المحاضرات الدراسي -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">جدول المحاضرات الدراسي</h5>
+            </div>
+            <div class="card-body">
+                {% if schedule %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>اليوم</th>
+                                    <th>المادة</th>
+                                    <th>من</th>
+                                    <th>إلى</th>
+                                    <th>القاعة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in schedule %}
+                                    <tr>
+                                        <td>{{ item['weekday'] }}</td>
+                                        <td>{{ item['subject_name'] }}</td>
+                                        <td>{{ item['start_time'] }}</td>
+                                        <td>{{ item['end_time'] }}</td>
+                                        <td>{{ item['room'] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0 py-3">لا يوجد جدول دراسي مسجل لمجموعتك حالياً.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ملف جافاسكريبت Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

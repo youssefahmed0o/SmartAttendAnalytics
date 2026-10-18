@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#122b50">
+    <meta name="description" content="SmartAttend Analytics - نظام إدارة الحضور والتحليلات الجامعية">
+
+    <title>{% block title %}SmartAttend Analytics | HITU{% endblock %}</title>
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+
+    <!-- Bootstrap: المكونات والتخطيط المتجاوب -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- خط الواجهة العربية -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- التنسيقات المركزية للمشروع -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <a class="visually-hidden-focusable skip-link" href="#main-content">انتقل إلى المحتوى الرئيسي</a>
+
+    {% block navbar %}
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-hitu sticky-top" aria-label="التنقل الرئيسي">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}" aria-label="SmartAttend Analytics - الصفحة الرئيسية">
+                    <img src="{{ url_for('static', filename='logo.png') }}"
+                         alt="شعار جامعة حلوان التكنولوجية الدولية"
+                         width="42" height="42"
+                         class="brand-logo">
+                    <span class="brand-copy">
+                        <strong class="brand-name">HITU</strong>
+                        <small class="brand-subtitle">{% block brand_subtitle %}SmartAttend Analytics{% endblock %}</small>
+                    </span>
+                </a>
+
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#siteNavbar"
+                        aria-controls="siteNavbar" aria-expanded="false"
+                        aria-label="فتح أو إغلاق قائمة التنقل">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="siteNavbar">
+                    <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2 py-3 py-lg-0">
+                        {% if session.get('username') %}
+                        <span class="navbar-text user-greeting">
+                            مرحبًا، <strong>{{ session.get('username') }}</strong>
+                        </span>
+                        {% endif %}
+
+                        {% block navbar_actions %}
+                        <div class="nav-actions d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-outline-light btn-sm theme-toggle"
+                                    data-theme-toggle aria-pressed="false"
+                                    aria-label="تفعيل الوضع الداكن">
+                                <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+                                <span class="theme-toggle-label">الوضع الداكن</span>
+                            </button>
+
+                            {% if session.get('username') %}
+                            <form action="{{ url_for('logout') }}" method="POST" class="m-0">
+                                <button type="submit" class="btn btn-outline-light btn-sm px-3">
+                                    تسجيل الخروج
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    {% endblock %}
+
+    <main id="main-content" class="page-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+    <footer class="site-footer container py-4 mt-auto">
+        <p class="mb-0 text-center small">
+            SmartAttend Analytics <span aria-hidden="true">·</span>
+            جامعة حلوان التكنولوجية الدولية HITU
+        </p>
+    </footer>
+    {% endblock %}
+  
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <!-- JavaScript الخاص بمكونات Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+
+    <!-- مساحة لملفات JavaScript العامة بعد توحيدها، ثم سكربتات كل صفحة -->
+    {% block global_scripts %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

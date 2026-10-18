@@ -1,0 +1,262 @@
+{% extends "layout.html" %}
+
+{% block title %} SmartAttend Analytics{% endblock %}
+{% block body_class %}login-page{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الدكتور - جامعة حلوان التكنولوجية الدولية HITU</title>
+    <!-- مكتبة Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- خط Cairo الأنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- ربط ملف الستايل المركزي للهوية البصرية -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- شريط التنقل العلوي الموحد (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-hitu sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="HITU Logo" height="40" class="d-inline-block align-text-top bg-white rounded-circle p-1">
+                <span>HITU <small class="fw-normal fs-6 text-light">| لوحة عضو هيئة التدريس</small></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#hituNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="hituNavbar">
+                <ul class="navbar-nav align-items-center gap-2 mt-2 mt-lg-0">
+                    <li class="nav-item">
+                        <span class="text-light small px-2">مرحباً، <strong class="text-warning">{{ instructor['display_name'] if instructor else session['username'] }}</strong></span>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{{ url_for('logout') }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-outline-light btn-sm px-3">تسجيل الخروج</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+
+        <!-- بطاقة الترحيب والملف الشخصي -->
+        <div class="card p-4 shadow-sm mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center mb-3 mb-md-0">
+                    <div class="university-logo-container" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <img src="{{ url_for('static', filename='logo.png') }}" alt="شعار الجامعة">
+                    </div>
+                </div>
+                <div class="col-md-10 text-center text-md-start">
+                    <h3 class="fw-bold text-dark mb-1">مرحبًا، {{ instructor['display_name'] if instructor else session['username'] }}</h3>
+                    <p class="text-muted mb-2">عضو هيئة التدريس - جامعة حلوان التكنولوجية الدولية</p>
+                    <a href="{{ url_for('doctor_analytics_page') }}" class="btn btn-hitu-gold btn-sm px-3 py-2 text-white">📊 عرض تقارير وإحصائيات المواد</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- رسائل التنبيه والخطأ -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- نافذة QR Modal -->
+        <div id="qr-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 9999; justify-content: center; align-items: center;">
+            <div class="card p-4 text-center" style="width: 90%; max-width: 380px;">
+                <h4 class="fw-bold text-dark mb-1">📲 رمز الـ QR المتغير</h4>
+                <p class="text-muted small mb-3">يتجدد تلقائياً كل 20 ثانية</p>
+                
+                <div id="qr-canvas" class="d-flex justify-content-center my-3"></div>
+                
+                <p class="small text-secondary mb-1">الكود النصي المؤقت:</p>
+                <div id="qr-text-code" class="p-2 rounded bg-light text-primary fw-bold font-monospace small mb-3" style="word-break: break-all;">جاري التوليد...</div>
+
+                <button onclick="closeQRModal()" class="btn btn-danger btn-sm px-4">إغلاق النافذة</button>
+            </div>
+        </div>
+
+        <!-- نموذج إنشاء محاضرة -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">إنشاء جلسة محاضرة جديدة</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('handle_create_lecture') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">المادة</label>
+                        <select name="subject_id" class="form-select" required>
+                            {% for sub in subjects %}
+                                <option value="{{ sub['id'] }}">{{ sub['subject_name'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- شبكة اختيار المجموعات (1 إلى 15) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">المجموعات المستهدفة (يمكن اختيار أكثر من مجموعة):</label>
+                        <div class="border rounded p-3" style="max-height: 180px; overflow-y: auto; background-color: #f8f9fa !important; color: #212529 !important;">
+                            <div class="row g-2">
+                                {% for g in groups %}
+                                    <div class="col-6 col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="group_ids" value="{{ g['id'] }}" id="group_{{ g['id'] }}">
+                                            <label class="form-check-label small" for="group_{{ g['id'] }}" style="cursor: pointer;">
+                                                {{ g['group_name'] }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">تاريخ المحاضرة</label>
+                            <input type="date" name="lecture_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">وقت البداية</label>
+                            <input type="time" name="start_time" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">وقت النهاية</label>
+                            <input type="time" name="end_time" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-hitu-primary w-100 py-2 fw-bold">إنشاء المحاضرة</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- سجل المحاضرات -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">سجل المحاضرات والجلسات</h5>
+            </div>
+            <div class="card-body">
+                {% if lectures %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>المادة</th>
+                                    <th>التاريخ</th>
+                                    <th>الوقت</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lec in lectures %}
+                                    <tr>
+                                        <td>{{ lec['id'] }}</td>
+                                        <td>{{ lec['subject_name'] }}</td>
+                                        <td>{{ lec['lecture_date'] }}</td>
+                                        <td>{{ lec['start_time'] }} - {{ lec['end_time'] }}</td>
+                                        <td>
+                                            <strong>
+                                                {% if lec['status'] == 'scheduled' %} مجدولة
+                                                {% elif lec['status'] == 'open' %} مفتوحة 🟢
+                                                {% else %} مغلقة 🔴
+                                                {% endif %}
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            {% if lec['status'] == 'scheduled' %}
+                                                <form action="{{ url_for('handle_open_lecture', lecture_id=lec['id']) }}" method="POST" class="m-0">
+                                                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold">فتح التسجيل</button>
+                                                </form>
+                                            {% elif lec['status'] == 'open' %}
+                                                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                                    <button class="btn btn-warning btn-sm fw-bold text-dark" type="button" onclick="startQRGenerator({{ lec['id'] }})">عرض الـ QR 📱</button>
+                                                    <form action="{{ url_for('handle_close_lecture', lecture_id=lec['id']) }}" method="POST" class="m-0">
+                                                        <button type="submit" class="btn btn-danger btn-sm fw-bold">إغلاق 🔴</button>
+                                                    </form>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted small">منتهية / مغلقة</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0 py-3">لا توجد محاضرات مسجلة حتى الآن.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+    let timerId = null;
+
+    function startQRGenerator(lectureId) {
+        const overlay = document.getElementById('qr-modal-overlay');
+        const textHolder = document.getElementById('qr-text-code');
+        const container = document.getElementById('qr-canvas');
+        
+        overlay.style.display = 'flex';
+
+        if (timerId) clearInterval(timerId);
+
+        function fetchNewToken() {
+            fetch('/lectures/' + lectureId + '/get-qr')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.token) {
+                        textHolder.innerText = data.token;
+                        container.innerHTML = '';
+                        if (typeof QRCode !== 'undefined') {
+                            new QRCode(container, {
+                                text: data.token,
+                                width: 180,
+                                height: 180
+                            });
+                        }
+                    } else {
+                        textHolder.innerText = "خطأ في جلب الرمز";
+                    }
+                })
+                .catch(err => {
+                    textHolder.innerText = "فشل الاتصال بالخادم";
+                });
+        }
+
+        fetchNewToken();
+        timerId = setInterval(fetchNewToken, 20000);
+    }
+
+    function closeQRModal() {
+        document.getElementById('qr-modal-overlay').style.display = 'none';
+        if (timerId) clearInterval(timerId);
+    }
+    </script>
+
+    <!-- ملف جافاسكريبت Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

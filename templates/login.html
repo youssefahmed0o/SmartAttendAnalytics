@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}تسجيل الدخول | SmartAttend Analytics{% endblock %}
+{% block body_class %}login-page{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<!-- ربط ملف المينفست وتحديد لون المتصفح -->
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<meta name="theme-color" content="#0d6efd">
+
+<style>
+    .login-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--hitu-primary) 0%, var(--hitu-secondary) 100%);
+    }
+
+    .login-page .page-main {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        position: relative;
+        width: 100%;
+        max-width: 440px;
+        padding: 2.5rem 2rem 1.5rem;
+        color: var(--hitu-text, #212529);
+        background: var(--hitu-card-bg, #fff);
+        border: 1px solid var(--hitu-border, rgba(0, 0, 0, .08));
+        border-radius: 1.25rem;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, .22);
+    }
+
+    .login-theme-toggle {
+        position: absolute;
+        inset-block-start: 1rem;
+        inset-inline-start: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--hitu-border, #ced4da);
+        border-radius: 50%;
+        color: inherit;
+        background: transparent;
+    }
+
+    .login-theme-toggle:hover,
+    .login-theme-toggle:focus-visible {
+        background: rgba(127, 127, 127, .12);
+    }
+
+    .login-logo {
+        width: 112px;
+        height: 112px;
+        object-fit: contain;
+        margin-bottom: 1rem;
+    }
+
+    .login-title {
+        color: var(--hitu-primary);
+    }
+
+    [data-theme="dark"] .login-card {
+        --hitu-text: #e8edf4;
+        --hitu-card-bg: #1c2633;
+        --hitu-border: #3b4a5d;
+        --hitu-primary: #a9c7ff;
+    }
+
+    [data-theme="dark"] .login-card .form-control {
+        color: #e8edf4;
+        background-color: #182230;
+        border-color: #526174;
+    }
+
+    [data-theme="dark"] .login-card .form-control::placeholder {
+        color: #aab6c5;
+    }
+
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 3.5rem 1.25rem 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 d-flex justify-content-center">
+            <section class="login-card text-center" aria-labelledby="login-title">
+                <button type="button"
+                        class="login-theme-toggle"
+                        data-theme-toggle
+                        aria-pressed="false"
+                        aria-label="تفعيل الوضع الداكن"
+                        title="تغيير المظهر">
+                    <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+                </button>
+
+                <img src="{{ url_for('static', filename='logo.png') }}"
+                     alt="شعار جامعة حلوان التكنولوجية الدولية"
+                     class="login-logo img-fluid">
+
+                <h1 id="login-title" class="h4 fw-bold mb-1 login-title">
+                    جامعة حلوان التكنولوجية الدولية
+                </h1>
+                <p class="text-muted small mb-4">
+                    Helwan Int'l Technological University (HITU)<br>
+                    <strong>SmartAttend Analytics System</strong>
+                </p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show py-2 small text-start" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('login') }}" method="POST" class="text-start">
+                    <div class="mb-3">
+                        <label for="username" class="form-label small fw-bold">اسم المستخدم أو كود الطالب</label>
+                        <input id="username" type="text" name="username" class="form-control py-2"
+                               required autocomplete="username" placeholder="أدخل اسم المستخدم أو الكود">
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label small fw-bold">كلمة المرور</label>
+                        <input id="password" type="password" name="password" class="form-control py-2"
+                               required autocomplete="current-password" placeholder="أدخل كلمة المرور">
+                    </div>
+                    <button type="submit" class="btn btn-hitu-primary w-100 py-2 fw-bold">
+                        تسجيل الدخول للنظام
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-3 border-top text-muted small">
+                    منصة التقديم الرقمية والحضور الأكاديمي &copy; 2026 HITU
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+<!-- كود تفعيل الـ Service Worker ليصبح الموقع WebApp متكامل -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js')
+      .then(() => console.log('Service Worker Registered'));
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends "layout.html" %}
+{% block title %}عنوان الصفحة{% endblock %}
+{% block navbar %}{% endblock %}
+{% block content %}
+        <!-- باقي العناصر -->
+    </div>
+</div>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة النظام والمحاضرات - جامعة حلوان التكنولوجية الدولية HITU</title>
+    <!-- مكتبة Bootstrap 5 للتصميم -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- خط عربي أنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- ربط ملف الستايل المركزي للهوية البصرية -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- شريط التنقل العلوي الموحد (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-hitu sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="HITU Logo" height="40" class="d-inline-block align-text-top bg-white rounded-circle p-1">
+                <span>HITU <small class="fw-normal fs-6 text-light">| إدارة النظام</small></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#hituNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="hituNavbar">
+                <ul class="navbar-nav align-items-center gap-2 mt-2 mt-lg-0">
+                    <li class="nav-item">
+                        <span class="text-light small px-2">مرحباً، <strong class="text-warning">{{ session.get('username', 'مدير النظام') }}</strong></span>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{{ url_for('logout') }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-outline-light btn-sm px-3">تسجيل الخروج</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <!-- رأس الصفحة وأزرار التنقل -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h2 class="text-dark fw-bold">لوحة إدارة النظام والمحاضرات (الأدمن)</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-hitu-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    ➕ إضافة مستخدم جديد
+                </button>
+                <a href="/admin" class="btn btn-outline-secondary fw-bold">العودة للوحة الأدمن</a>
+            </div>
+        </div>
+        
+        <!-- رسائل التنبيه والنجاح/الخطأ -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- جدول عرض المستخدمين -->
+        <div class="card shadow-sm mb-5">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">إدارة المستخدمين والحسابات</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم المستخدم / الكود</th>
+                                <th>الاسم الكامل / الظاهري</th>
+                                <th>الصلاحية (Role)</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td class="fw-bold">{{ user.username }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>
+                                    <strong>
+                                        {% if user.role == 'admin' %}
+                                            <span class="badge bg-danger">مسؤول (Admin)</span>
+                                        {% elif user.role == 'doctor' %}
+                                            <span class="badge bg-success">دكتور (Doctor)</span>
+                                        {% else %}
+                                            <span class="badge bg-info text-dark">طالب (Student)</span>
+                                        {% endif %}
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if user.username != 'admin' %}
+                                    <form action="/admin/users/delete/{{ user.id }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger fw-bold">حذف</button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted small">محمي</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-muted py-4">لا توجد حسابات مسجلة حالياً.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول إدارة ومراقبة سجل المحاضرات (الخاص بالأدمن) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">سجل ومتابعة جميع المحاضرات والحضور</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>المادة</th>
+                                <th>التاريخ والوقت</th>
+                                <th>الحالة</th>
+                                <th>إجراءات المشرف</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if lectures %}
+                                {% for lec in lectures %}
+                                <tr>
+                                    <td>{{ lec.id }}</td>
+                                    <td class="fw-bold">{{ lec.subject_name }}</td>
+                                    <td>{{ lec.lecture_date }} <br> <small class="text-muted">{{ lec.start_time }} - {{ lec.end_time }}</small></td>
+                                    <td>
+                                        <strong>
+                                            {% if lec.status == 'scheduled' %}
+                                                <span class="badge bg-warning text-dark">مجدولة</span>
+                                            {% elif lec.status == 'open' %}
+                                                <span class="badge bg-success">مفتوحة 🟢</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">مغلقة 🔴</span>
+                                            {% endif %}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <!-- زر عرض كشوف حضور الطلاب -->
+                                            <a href="/admin/lectures/{{ lec.id }}/attendance" class="btn btn-sm btn-info text-white fw-bold">كشوف الحضور 📊</a>
+                                            
+                                            <!-- زر حذف المحاضرة -->
+                                            <form action="/admin/lectures/delete/{{ lec.id }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه المحاضرة وسجلاتها نهائياً؟');">
+                                                <button type="submit" class="btn btn-sm btn-danger fw-bold">حذف 🗑️</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-muted py-4">لا توجد محاضرات مسجلة في النظام حالياً.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal إضافة مستخدم جديد -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="/admin/users/add" method="POST">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-bold" id="addUserModalLabel">إضافة مستخدم جديد للنظام</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">اسم المستخدم أو كود الطالب</label>
+                            <input type="text" name="username" class="form-control" required placeholder="مثال: 2530603 أو muhammed_salah">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">الاسم الكامل / الظاهري</label>
+                            <input type="text" name="full_name" class="form-control" required placeholder="مثال: أحمد محمد علي">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">كلمة المرور</label>
+                            <input type="password" name="password" class="form-control" required placeholder="أدخل كلمة المرور">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">الصلاحية (الدور)</label>
+                            <select name="role" id="userRoleSelect" class="form-select" required onchange="toggleGroupSelect()">
+                                <option value="student">طالب (Student)</option>
+                                <option value="doctor">دكتور (Doctor)</option>
+                                <option value="admin">مسؤول (Admin)</option>
+                            </select>
+                        </div>
+                        <!-- قائمة اختيار المجموعة (تظهر فقط عند اختيار طالب) -->
+                        <div class="mb-3" id="groupSelectContainer">
+                            <label class="form-label fw-bold">المجموعة الدراسية</label>
+                            <select name="group_id" class="form-select">
+                                {% for i in range(1, 16) %}
+                                    <option value="{{ i }}">المجموعة {{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-hitu-primary fw-bold">حفظ المستخدم</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- دالة جافاسكريبت للتحكم في إظهار أو إخفاء حقل المجموعة -->
+    <script>
+    function toggleGroupSelect() {
+        const role = document.getElementById('userRoleSelect').value;
+        const groupContainer = document.getElementById('groupSelectContainer');
+        if (role === 'student') {
+            groupContainer.style.display = 'block';
+        } else {
+            groupContainer.style.display = 'none';
+        }
+    }
+    </script>
+
+    <!-- ملف جافاسكريبت الخاص بـ Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,213 @@
+/* ==========================================
+   هوية جامعة حلوان التكنولوجية الدولية (HITU)
+   SmartAttend Analytics Global Stylesheet
+   ========================================== */
+
+/* 1. المتغيرات الموحدة للألوان والأنماط */
+:root {
+    --hitu-primary: #122b50;      /* الأزرق الملكي الداكن من شعار الجامعة */
+    --hitu-secondary: #1e3c72;    /* الأزرق التكنولوجي */
+    --hitu-accent: #c5a059;       /* الذهبي الأكاديمي الفاخر */
+    --hitu-bg: #f4f6f9;           /* خلفية عامة مريحة للعين */
+    --hitu-card-bg: #ffffff;
+    --hitu-dark: #212529;
+    --hitu-text-muted: #6c757d;
+}
+
+/* 2. التنسيق العام لصفحات الموقع */
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--hitu-bg);
+    color: var(--hitu-dark);
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+}
+
+/* 3. شريط التنقل العلوي الموحد (Navbar) */
+.navbar-hitu {
+    background: linear-gradient(135deg, var(--hitu-primary) 0%, var(--hitu-secondary) 100%) !important;
+    border-bottom: 3px solid var(--hitu-accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-hitu .navbar-brand {
+    font-weight: 700;
+    color: #ffffff !important;
+    font-size: 1.25rem;
+}
+
+.navbar-hitu .navbar-brand span {
+    color: var(--hitu-accent);
+}
+
+/* 4. تصميم البطاقات والـ Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    background: var(--hitu-card-bg);
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.card-header-hitu {
+    background: linear-gradient(135deg, var(--hitu-primary) 0%, var(--hitu-secondary) 100%);
+    color: #ffffff;
+    font-weight: 700;
+    border-bottom: 2px solid var(--hitu-accent);
+    padding: 15px 20px;
+}
+
+/* 5. تخصيص الأزرار الرسمية */
+.btn-hitu-primary {
+    background-color: var(--hitu-primary);
+    color: #ffffff;
+    font-weight: 600;
+    border: 1px solid var(--hitu-primary);
+    transition: all 0.3s ease;
+}
+
+.btn-hitu-primary:hover {
+    background-color: #0b1d38;
+    color: var(--hitu-accent);
+    border-color: var(--hitu-accent);
+}
+
+.btn-hitu-gold {
+    background-color: var(--hitu-accent);
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-hitu-gold:hover {
+    background-color: #b08d48;
+    color: #ffffff;
+}
+
+/* 6. تنسيق وعرض الشعار المقصوص باحترافية */
+.university-logo-container {
+    width: 110px;
+    height: 110px;
+    overflow: hidden;
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 3px solid var(--hitu-accent);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.university-logo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 7. تنسيق الجداول لتناسب الشاشات والهواتف */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: var(--hitu-primary);
+    color: #ffffff;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 2px solid var(--hitu-accent);
+}
+
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+}
+/* ==========================================
+   تنسيقات الوضع الداكن الموحدة (Dark Mode)
+   ========================================== */
+
+/* إعدادات الألوان المتغيرة للوضع الداكن */
+html[data-theme="dark"] {
+    --bg-color: #121826;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+}
+
+/* تطبيق ألوان الوضع الداكن على عناصر الصفحة */
+html[data-theme="dark"] body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* تنسيق البطاقات والمربعات في الوضع الداكن */
+html[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* تحويل العناوين والنصوص الداكنة لتبدو فاتحة وواضحة */
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+html[data-theme="dark"] .text-dark,
+html[data-theme="dark"] label {
+    color: #f8f9fa !important;
+}
+
+/* تحسين قراءة النصوص الثانوية (Muted) */
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .text-secondary {
+    color: #cbd5e1 !important;
+}
+
+/* ضبط القوائم المنسدلة ومدخلات النصوص */
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+    background-color: #273449 !important;
+    color: #f1f5f9 !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ضبط جدول البيانات في الوضع الداكن */
+html[data-theme="dark"] .table {
+    color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .table td,
+html[data-theme="dark"] .table th {
+    background-color: transparent !important;
+    color: #f1f5f9 !important;
+    border-color: var(--border-color) !important;
+}
+
+/* صندوق التحديد الخاص بالمجموعات */
+html[data-theme="dark"] .bg-light,
+html[data-theme="dark"] .form-check-label {
+    background-color: #273449 !important;
+    color: #f1f5f9 !important;
+}
+/* إزالة أي خلفيات داكنة عن نصوص المجموعات داخل المربع الأبيض */
+html[data-theme="dark"] .form-check-label {
+    background-color: transparent !important;
+    color: #212529 !important; /* لون خط أسود واضح فوق الأبيض */
+}
+
+/* تثبيت خلفية الحاوية البيضاء */
+div[style*="overflow-y: auto"] {
+    background-color: #ffffff !important;
+}
+
+
+}

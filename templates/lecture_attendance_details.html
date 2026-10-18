@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+{% block navbar %}{% endblock %}
+{% block title %}عنوان الصفحة{% endblock %}
+{% block content %}
+        <!-- باقي العناصر -->
+    </div>
+</div>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل حضور المحاضرة - جامعة حلوان التكنولوجية الدولية HITU</title>
+    <!-- مكتبة Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- خط Cairo الأنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- ربط ملف الستايل المركزي للهوية البصرية -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- شريط التنقل العلوي الموحد (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-hitu sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="HITU Logo" height="40" class="d-inline-block align-text-top bg-white rounded-circle p-1">
+                <span>HITU <small class="fw-normal fs-6 text-light">| تفاصيل حضور المحاضرة</small></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#hituNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="hituNavbar">
+                <ul class="navbar-nav align-items-center gap-2 mt-2 mt-lg-0">
+                    <li class="nav-item">
+                        <span class="text-light small px-2">مرحباً، <strong class="text-warning">{{ session.get('username', 'عضو هيئة التدريس') }}</strong></span>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{{ url_for('logout') }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-outline-light btn-sm px-3">تسجيل الخروج</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        
+        <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline-secondary mb-3 fw-bold">← العودة إلى لوحة التحكم</a>[span_1](start_span)[span_1](end_span)
+
+        <!-- بطاقة معلومات المحاضرة -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h4 class="mb-0">تفاصيل المحاضرة الحضور</h4>[span_2](start_span)[span_2](end_span)
+            </div>
+            <div class="card-body">
+                {% if lecture %}[span_3](start_span)[span_3](end_span)
+                    <p class="fs-5 mb-2"><strong>المادة:</strong> {{ lecture['subject_name'] }}</p>[span_4](start_span)[span_4](end_span)
+                    <p class="fs-5 mb-2"><strong>التاريخ والوقت:</strong> {{ lecture['lecture_date'] }} ({{ lecture['start_time'] }} - {{ lecture['end_time'] }})</p>[span_5](start_span)[span_5](end_span)
+                    <p class="fs-5 mb-0"><strong>الحالة:</strong> 
+                        {% if lecture['status'] == 'open' %} <span class="badge bg-success">مفتوحة 🟢</span>[span_6](start_span)[span_6](end_span)
+                        {% elif lecture['status'] == 'closed' %} <span class="badge bg-secondary">مغلقة 🔴</span>[span_7](start_span)[span_7](end_span)
+                        {% else %} <span class="badge bg-warning text-dark">مجدولة ⏱️</span> {% endif %}[span_8](start_span)[span_8](end_span)
+                    </p>
+                {% endif %}[span_9](start_span)[span_9](end_span)
+            </div>
+        </div>
+
+        <!-- جدول الطلاب الحاضرين -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header-hitu">
+                <h5 class="mb-0">الطلاب الحاضرون ({{ attendees|length }})</h5>[span_10](start_span)[span_10](end_span)
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if attendees %}[span_11](start_span)[span_11](end_span)
+                        <table class="table table-bordered table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>اسم الطالب</th>
+                                    <th>كود الطالب</th>
+                                    <th>المجموعة</th>
+                                    <th>وقت تسجيل الحضور</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for att in attendees %}[span_12](start_span)[span_12](end_span)
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ att['full_name'] }}</td>[span_13](start_span)[span_13](end_span)
+                                        <td>{{ att['student_code'] }}</td>[span_14](start_span)[span_14](end_span)
+                                        <td>{{ att['group_name'] or 'غير محددة' }}</td>[span_15](start_span)[span_15](end_span)
+                                        <td class="fw-bold text-success">{{ att['marked_at'] }}</td>[span_16](start_span)[span_16](end_span)
+                                    </tr>
+                                {% endfor %}[span_17](start_span)[span_17](end_span)
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-center text-muted py-4 m-0">لم يسجل أي طالب حضوره لهذه المحاضرة حتى الآن.</p>[span_18](start_span)[span_18](end_span)
+                    {% endif %}[span_19](start_span)[span_19](end_span)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ملف جافاسكريبت Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}
